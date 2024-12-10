@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 class CalculatorView extends StatefulWidget {
   const CalculatorView({super.key});
@@ -32,67 +33,84 @@ class _CalculatorViewState extends State<CalculatorView> {
     "=",
   ];
 
-  final _key = GlobalKey<FormState>();
-  int first = 0;
-  int second = 0;
-  String operation = "";
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calculator App'),
+        title: const Text('Sangam Calculator App'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Form(
-          key: _key,
-          child: Column(
-            children: [
-              TextFormField(
-                textDirection: TextDirection.rtl,
-                controller: _textController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                style: const TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
+        child: Column(
+          children: [
+            TextField(
+              controller: _textController,
+              readOnly: true,
+              textAlign: TextAlign.right,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(
-                height: 8,
+              style: const TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
               ),
-              Expanded(
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 8.0,
-                    mainAxisSpacing: 8.0,
-                  ),
-                  itemCount: lstSymbols.length,
-                  itemBuilder: (context, index) {
-                    return ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        ),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 8.0,
+                ),
+                itemCount: lstSymbols.length,
+                itemBuilder: (context, index) {
+                  return ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 12, 15, 163),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(0),
                       ),
-                      onPressed: () {},
-                      child: Text(
-                        lstSymbols[index],
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    ),
+                    onPressed: () {
+                      String symbol = lstSymbols[index];
+                      setState(() {
+                        if (symbol == "C") {
+                          _textController.text = "";
+                        } else if (symbol == "<-") {
+                          if (_textController.text.isNotEmpty) {
+                            _textController.text = _textController.text
+                                .substring(0, _textController.text.length - 1);
+                          }
+                        } else if (symbol == "=") {
+                          try {
+                            Parser p = Parser();
+                            Expression exp = p.parse(_textController.text);
+                            ContextModel cm = ContextModel();
+                            double eval = exp.evaluate(EvaluationType.REAL, cm);
+                            _textController.text = eval.toString();
+                          } catch (e) {
+                            _textController.text = "Error";
+                          }
+                        } else {
+                          _textController.text += symbol;
+                        }
+                      });
+                    },
+                    child: Text(
+                      lstSymbols[index],
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
